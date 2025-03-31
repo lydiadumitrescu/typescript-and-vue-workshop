@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
 import { onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { restaurantStatusList } from '@/constants'
 import { useRestaurantStore } from '@/stores/RestaurantStore'
-import { useRoute, useRouter } from 'vue-router'
 import type { Restaurant } from '@/types'
 
-type AddEditType = 'add' | 'edit'
-let componentType: AddEditType = 'add'
 const restaurantStore = useRestaurantStore()
 const route = useRoute()
 const router = useRouter()
+
+type AddEditType = 'add' | 'edit'
+let componentType: AddEditType = 'add'
 
 let targetRestaurant: Restaurant = reactive({
   id: uuidv4(),
@@ -28,20 +29,20 @@ if (id) {
   targetRestaurant = { ...restaurantStore.getRestaurantById(id.slice(1)) }
 }
 
-const elNameInput = ref<HTMLInputElement | null>()
 const addEditRestaurant = () => {
   if (componentType === 'edit') {
     restaurantStore.editRestaurant(targetRestaurant)
   } else if (componentType === 'add') {
     restaurantStore.addRestaurant(targetRestaurant)
   }
-  router.push('/restaurants')
+  cancelRestaurant()
 }
 
 const cancelRestaurant = () => {
   router.push('/restaurants')
 }
 
+const elNameInput = ref<HTMLInputElement | null>()
 onMounted(() => {
   elNameInput.value?.focus()
 })

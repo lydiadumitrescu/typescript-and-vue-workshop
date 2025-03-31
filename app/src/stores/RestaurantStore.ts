@@ -6,7 +6,6 @@ type StoreShape = {
 }
 
 export const useRestaurantStore = defineStore('RestaurantStore', {
-  //Data
   state: (): StoreShape => ({
     list: [
       {
@@ -33,7 +32,6 @@ export const useRestaurantStore = defineStore('RestaurantStore', {
       },
     ],
   }),
-  //computed
   getters: {
     getRestaurantById:
       (state: any) =>
@@ -44,7 +42,6 @@ export const useRestaurantStore = defineStore('RestaurantStore', {
       (payload: Restaurant): number =>
         state.list.findIndex((r: Restaurant) => r.id === payload.id),
   },
-  //computed
   actions: {
     addRestaurant(payload: Restaurant): void {
       this.list.push(payload)
@@ -53,9 +50,6 @@ export const useRestaurantStore = defineStore('RestaurantStore', {
       this.list[this.getIndexByRestaurant(payload)] = payload
     },
     deleteRestaurant(payload: Restaurant): void {
-      // this.list = this.list.filter((restaurant: Restaurant): boolean => {
-      //   return restaurant.id !== payload.id
-      // })
       const index = this.list.findIndex((restaurant) => restaurant.id === payload.id)
       if (index !== -1) {
         this.list.splice(index, 1)

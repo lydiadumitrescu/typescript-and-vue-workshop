@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { v4 as uuidv4 } from 'uuid'
 import { restaurantStatusList } from '@/constants'
 import { useDishStore } from '@/stores/DishStore'
-import { useRoute, useRouter } from 'vue-router'
 import type { Dish } from '@/types'
 
 type AddEditType = 'add' | 'edit'
@@ -27,19 +27,19 @@ if (id) {
   targetDish = { ...dishStore.getDishById(id.slice(1)) }
 }
 
-const elNameInput = ref<HTMLInputElement | null>()
 const addEditDish = () => {
-  if( componentType === 'edit'){
+  if (componentType === 'edit') {
     dishStore.editDish(targetDish)
-  }else if(componentType === 'add'){
+  } else if (componentType === 'add') {
     dishStore.addDish(targetDish)
   }
-  router.push('/dishes')
+  cancelDish()
 }
 const cancelDish = () => {
   router.push('/dishes')
 }
 
+const elNameInput = ref<HTMLInputElement | null>()
 onMounted(() => {
   elNameInput.value?.focus()
 })

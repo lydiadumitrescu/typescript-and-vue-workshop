@@ -6,7 +6,6 @@ type StoreShape = {
 }
 
 export const useDishStore = defineStore('DishStore', {
-  //Data
   state: (): StoreShape => ({
     list: [
       {
@@ -29,7 +28,6 @@ export const useDishStore = defineStore('DishStore', {
       },
     ],
   }),
-  //computed
   getters: {
     getDishById:
       (state: any) =>
@@ -40,7 +38,6 @@ export const useDishStore = defineStore('DishStore', {
       (payload: Dish): number =>
         state.list.findIndex((d: Dish) => d.id === payload.id),
   },
-  //computed
   actions: {
     addDish(payload: Dish): void {
       this.list.push(payload)

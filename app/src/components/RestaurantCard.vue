@@ -4,7 +4,6 @@ import type { Restaurant, StatusColorType } from '@/types'
 
 type PropType = { restaurant: Restaurant }
 const props = defineProps<PropType>()
-// const emits = defineEmits(['delete-restaurant'])
 const emits = defineEmits<{
   (e: 'edit-restaurant', restaurant: Restaurant): void
   (e: 'delete-restaurant', restaurant: Restaurant): void
