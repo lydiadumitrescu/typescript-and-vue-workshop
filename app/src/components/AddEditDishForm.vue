@@ -1,43 +1,43 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import type { Dish } from '@/types'
 import { v4 as uuidv4 } from 'uuid'
 import { restaurantStatusList } from '@/constants'
 import { useDishStore } from '@/stores/DishStore'
+import { useRoute, useRouter } from 'vue-router'
+import type { Dish } from '@/types'
 
-type AddEditType = 'new' | 'edit'
-let componentType: AddEditType = 'new'
-
-type PropsState = {
-  dish?: Dish
-}
-const props = defineProps<PropsState>()
+type AddEditType = 'add' | 'edit'
+let componentType: AddEditType = 'add'
+const dishStore = useDishStore()
+const route = useRoute()
+const router = useRouter()
 
 let targetDish: Dish = reactive({
   id: uuidv4(),
   name: '',
-  status: 'Want to Try',
   diet: '',
+  status: 'Want to Try',
 })
 
-if (props.dish) {
+const id = route.params.id as string
+if (id) {
   componentType = 'edit'
 
   const dishStore = useDishStore()
-  targetDish = { ...dishStore.getDishById(props.dish.id) }
+  targetDish = { ...dishStore.getDishById(id.slice(1)) }
 }
-
-const emits = defineEmits<{
-  (e: 'add-edit-dish', dish: Dish): void
-  (e: 'cancel-dish'): void
-}>()
 
 const elNameInput = ref<HTMLInputElement | null>()
 const addEditDish = () => {
-  emits('add-edit-dish', targetDish)
+  if( componentType === 'edit'){
+    dishStore.editDish(targetDish)
+  }else if(componentType === 'add'){
+    dishStore.addDish(targetDish)
+  }
+  router.push('/dishes')
 }
 const cancelDish = () => {
-  emits('cancel-dish')
+  router.push('/dishes')
 }
 
 onMounted(() => {

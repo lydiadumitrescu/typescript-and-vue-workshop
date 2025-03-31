@@ -2,16 +2,15 @@
 import { v4 as uuidv4 } from 'uuid'
 import { onMounted, reactive, ref } from 'vue'
 import { restaurantStatusList } from '@/constants'
-import type { Restaurant } from '@/types'
 import { useRestaurantStore } from '@/stores/RestaurantStore'
+import { useRoute, useRouter } from 'vue-router'
+import type { Restaurant } from '@/types'
 
-type AddEditType = 'new' | 'edit'
-let componentType: AddEditType = 'new'
-
-type PropsState = {
-  restaurant?: Restaurant
-}
-const props = defineProps<PropsState>()
+type AddEditType = 'add' | 'edit'
+let componentType: AddEditType = 'add'
+const restaurantStore = useRestaurantStore()
+const route = useRoute()
+const router = useRouter()
 
 let targetRestaurant: Restaurant = reactive({
   id: uuidv4(),
@@ -21,25 +20,26 @@ let targetRestaurant: Restaurant = reactive({
   status: 'Want to Try',
 })
 
-if (props.restaurant) {
+const id = route.params.id as string
+if (id) {
   componentType = 'edit'
 
   const restaurantStore = useRestaurantStore()
-  targetRestaurant = { ...restaurantStore.getRestaurantById(props.restaurant.id) }
+  targetRestaurant = { ...restaurantStore.getRestaurantById(id.slice(1)) }
 }
-
-const emits = defineEmits<{
-  (e: 'add-edit-restaurant', restaurant: Restaurant): void
-  (e: 'cancel-restaurant'): void
-}>()
 
 const elNameInput = ref<HTMLInputElement | null>()
 const addEditRestaurant = () => {
-  emits('add-edit-restaurant', targetRestaurant)
+  if (componentType === 'edit') {
+    restaurantStore.editRestaurant(targetRestaurant)
+  } else if (componentType === 'add') {
+    restaurantStore.addRestaurant(targetRestaurant)
+  }
+  router.push('/restaurants')
 }
 
 const cancelRestaurant = () => {
-  emits('cancel-restaurant')
+  router.push('/restaurants')
 }
 
 onMounted(() => {

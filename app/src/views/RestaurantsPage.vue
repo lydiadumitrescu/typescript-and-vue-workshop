@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import RestaurantCard from '@/components/RestaurantCard.vue'
 import SideMenu from '@/components/SideMenu.vue'
 import type { Restaurant } from '@/types'
-import { useRoute } from 'vue-router'
 import { useRestaurantStore } from '@/stores/RestaurantStore'
-import AddEditRestaurantForm from '@/components/AddEditRestaurantForm.vue'
+import { useRouter } from 'vue-router'
 
-type ShowFormState = '' | 'new' | 'edit'
 const restaurantStore = useRestaurantStore()
+const router = useRouter()
 
 const filterText = ref<string>('')
 const filteredRestaurantList = computed((): Restaurant[] => {
@@ -19,26 +18,16 @@ const filteredRestaurantList = computed((): Restaurant[] => {
     return false
   })
 })
-const numberOfRestaurants = computed(() => {
+const numberOfRestaurants = computed((): number => {
   return filteredRestaurantList.value.length
 })
-const addRestaurant = (payload: Restaurant): void => {
-  restaurantStore.addRestaurant(payload)
-  hideForm()
-}
-const editRestaurantItem = (payload: Restaurant): void => {
-  restaurantStore.editRestaurant(payload)
-  hideForm()
+
+const onAddRestaurantOpen = (): void => {
+  router.push('/restaurants/add')
 }
 
-let restaurantToEdit = ref<Restaurant>()
 const onEditRestaurantOpen = (payload: Restaurant): void => {
-  restaurantToEdit.value = payload
-  showForm.value = 'edit'
-}
-const showForm = ref<ShowFormState>('')
-const hideForm = (): void => {
-  showForm.value = ''
+  router.push(`/restaurants/edit/:${payload.id}`)
 }
 </script>
 
@@ -53,7 +42,7 @@ const hideForm = (): void => {
         <h1 class="title">Restaurants</h1>
 
         <!-- CTA Bar -->
-        <nav v-if="!showForm" class="level">
+        <nav class="level">
           <div class="level-left">
             <div class="level-item">
               <p class="subtitle is-5">
@@ -62,7 +51,7 @@ const hideForm = (): void => {
             </div>
 
             <p class="level-item">
-              <button @click="showForm = 'new'" class="button is-success">New</button>
+              <button @click="onAddRestaurantOpen" class="button is-success">New</button>
             </p>
 
             <div class="level-item is-hidden-tablet-only">
@@ -78,23 +67,10 @@ const hideForm = (): void => {
           </div>
         </nav>
 
-        <!-- New Restaurant Form -->
-        <AddEditRestaurantForm
-          v-if="showForm === 'new'"
-          @add-edit-restaurant="addRestaurant"
-          @cancel-restaurant="hideForm"
-        />
-
-        <!-- Edit Restaurant Form -->
-        <AddEditRestaurantForm
-          v-else-if="showForm === 'edit'"
-          :restaurant="restaurantToEdit"
-          @add-edit-restaurant="editRestaurantItem"
-          @cancel-restaurant="hideForm"
-        />
+        <RouterView></RouterView>
 
         <!-- Display Results -->
-        <div v-else class="columns is-multiline">
+        <div class="columns is-multiline">
           <div v-for="item in filteredRestaurantList" class="column is-full" :key="`item-${item}`">
             <RestaurantCard
               :restaurant="item"
