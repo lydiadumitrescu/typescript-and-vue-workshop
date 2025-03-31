@@ -1,76 +1,44 @@
-<script>
-import NewRestaurantForm from '../components/NewRestaurantForm.vue'
-import RestaurantCard from '../components/RestaurantCard.vue'
-import SideMenu from '../components/SideMenu.vue'
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import RestaurantCard from '@/components/RestaurantCard.vue'
+import SideMenu from '@/components/SideMenu.vue'
+import type { Restaurant } from '@/types'
+import { useRoute } from 'vue-router'
+import { useRestaurantStore } from '@/stores/RestaurantStore'
+import AddEditRestaurantForm from '@/components/AddEditRestaurantForm.vue'
 
-export default {
-  components: {
-    NewRestaurantForm,
-    RestaurantCard,
-    SideMenu,
-  },
-  data: () => ({
-    filterText: '',
-    restaurantList: [
-      {
-        id: '9f995ce4-d2fc-4d00-af1d-6cb1647c6bd3',
-        name: 'Quiche From a Rose',
-        address: '283 Thisisnota St.',
-        website: 'www.quichefromarose.com',
-        status: 'Want to Try',
-      },
-      {
-        id: 'ae62a3da-791b-4f44-99a1-4be1b0ec30b8',
-        name: 'Tamago Never Dies',
-        address: '529 Letsgofora Dr.',
-        website: 'www.tamagoneverdies.com',
-        status: 'Recommended',
-      },
-      {
-        id: '9b361dae-2d44-4499-9940-97e188d41a32',
-        name: 'Penne For Your Thoughts',
-        address: '870 Thisisa St.',
-        website: 'www.penneforyourthoughts.com',
-        status: 'Do Not Recommend',
-      },
-    ],
-    showNewForm: false,
-  }),
-  computed: {
-    filteredRestaurantList() {
-      return this.restaurantList.filter((restaurant) => {
-        if (restaurant.name) {
-          return restaurant.name.toLowerCase().includes(this.filterText.toLowerCase())
-        } else {
-          return this.restaurantList
-        }
-      })
-    },
-    numberOfRestaurants() {
-      return this.filteredRestaurantList.length
-    },
-  },
-  methods: {
-    addRestaurant(payload) {
-      this.restaurantList.push(payload)
-      this.hideForm()
-    },
-    deleteRestaurant(payload) {
-      this.restaurantList = this.restaurantList.filter((restaurant) => {
-        return restaurant.id !== payload.id
-      })
-    },
-    hideForm() {
-      this.showNewForm = false
-    },
-  },
-  mounted() {
-    const route = this.$route
+type ShowFormState = '' | 'new' | 'edit'
+const restaurantStore = useRestaurantStore()
 
-    if (this.$route.query.new) {
-      showNewForm.value = true
+const filterText = ref<string>('')
+const filteredRestaurantList = computed((): Restaurant[] => {
+  return restaurantStore.list.filter((restaurant: Restaurant): boolean => {
+    if (restaurant.name) {
+      return restaurant.name.toLowerCase().includes(filterText.value.toLowerCase())
     }
-  },
+    return false
+  })
+})
+const numberOfRestaurants = computed(() => {
+  return filteredRestaurantList.value.length
+})
+const addRestaurant = (payload: Restaurant): void => {
+  restaurantStore.addRestaurant(payload)
+  hideForm()
+}
+const editRestaurantItem = (payload: Restaurant): void => {
+  restaurantStore.editRestaurant(payload)
+  hideForm()
+}
+
+let restaurantToEdit = ref<Restaurant>()
+const onEditRestaurantOpen = (payload: Restaurant): void => {
+  restaurantToEdit.value = payload
+  showForm.value = 'edit'
+}
+const showForm = ref<ShowFormState>('')
+const hideForm = (): void => {
+  showForm.value = ''
 }
 </script>
 
@@ -85,7 +53,7 @@ export default {
         <h1 class="title">Restaurants</h1>
 
         <!-- CTA Bar -->
-        <nav v-if="!showNewForm" class="level">
+        <nav v-if="!showForm" class="level">
           <div class="level-left">
             <div class="level-item">
               <p class="subtitle is-5">
@@ -94,7 +62,7 @@ export default {
             </div>
 
             <p class="level-item">
-              <button @click="showNewForm = true" class="button is-success">New</button>
+              <button @click="showForm = 'new'" class="button is-success">New</button>
             </p>
 
             <div class="level-item is-hidden-tablet-only">
@@ -111,12 +79,28 @@ export default {
         </nav>
 
         <!-- New Restaurant Form -->
-        <NewRestaurantForm v-if="showNewForm" @add-new-restaurant="addRestaurant" @cancel-new-restaurant="hideForm" />
+        <AddEditRestaurantForm
+          v-if="showForm === 'new'"
+          @add-edit-restaurant="addRestaurant"
+          @cancel-restaurant="hideForm"
+        />
+
+        <!-- Edit Restaurant Form -->
+        <AddEditRestaurantForm
+          v-else-if="showForm === 'edit'"
+          :restaurant="restaurantToEdit"
+          @add-edit-restaurant="editRestaurantItem"
+          @cancel-restaurant="hideForm"
+        />
 
         <!-- Display Results -->
         <div v-else class="columns is-multiline">
           <div v-for="item in filteredRestaurantList" class="column is-full" :key="`item-${item}`">
-            <RestaurantCard :restaurant="item" @delete-restaurant="deleteRestaurant" />
+            <RestaurantCard
+              :restaurant="item"
+              @edit-restaurant="onEditRestaurantOpen"
+              @delete-restaurant="restaurantStore.deleteRestaurant"
+            />
           </div>
         </div>
       </div>
