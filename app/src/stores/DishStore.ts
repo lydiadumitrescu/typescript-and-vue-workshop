@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 
 type StoreShape = {
   list: Dish[]
+  filterText: string
 }
 
 export const useDishStore = defineStore('DishStore', {
@@ -27,6 +28,7 @@ export const useDishStore = defineStore('DishStore', {
         diet: 'Keto',
       },
     ],
+    filterText: '',
   }),
   getters: {
     getDishById:
@@ -37,6 +39,15 @@ export const useDishStore = defineStore('DishStore', {
       (state: any) =>
       (payload: Dish): number =>
         state.list.findIndex((d: Dish) => d.id === payload.id),
+    getFilteredDishList: (state: any) => (): Dish[] => {
+      return state.list.filter((dish: Dish): boolean => {
+        if (dish.name) {
+          return dish.name.toLowerCase().includes(state.filterText.toLowerCase())
+        }
+        return false
+      })
+    },
+    getFiltredDishListLength: (state: any) => (): number => state.getFilteredDishList().length,
   },
   actions: {
     addDish(payload: Dish): void {

@@ -1,26 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useRestaurantStore } from '@/stores/RestaurantStore'
 import RestaurantCard from '@/components/RestaurantCard.vue'
 import SideMenu from '@/components/SideMenu.vue'
 import type { Restaurant } from '@/types'
-import { useRestaurantStore } from '@/stores/RestaurantStore'
-import { useRouter } from 'vue-router'
 
 const restaurantStore = useRestaurantStore()
 const router = useRouter()
-
-const filterText = ref<string>('')
-const filteredRestaurantList = computed((): Restaurant[] => {
-  return restaurantStore.list.filter((restaurant: Restaurant): boolean => {
-    if (restaurant.name) {
-      return restaurant.name.toLowerCase().includes(filterText.value.toLowerCase())
-    }
-    return false
-  })
-})
-const numberOfRestaurants = computed((): number => {
-  return filteredRestaurantList.value.length
-})
 
 const onAddRestaurantOpen = (): void => {
   router.push('/restaurants/add')
@@ -46,7 +32,7 @@ const onEditRestaurantOpen = (payload: Restaurant): void => {
           <div class="level-left">
             <div class="level-item">
               <p class="subtitle is-5">
-                <strong>{{ numberOfRestaurants }}</strong> restaurants
+                <strong>{{ restaurantStore.getFiltredRestaurantListLength() }}</strong> restaurants
               </p>
             </div>
 
@@ -57,7 +43,7 @@ const onEditRestaurantOpen = (payload: Restaurant): void => {
             <div class="level-item is-hidden-tablet-only">
               <div class="field has-addons">
                 <p class="control">
-                  <input class="input" type="text" placeholder="Restaurant name" v-model="filterText" />
+                  <input class="input" type="text" placeholder="Restaurant name" v-model="restaurantStore.filterText" />
                 </p>
                 <p class="control">
                   <button class="button">Search</button>
@@ -71,7 +57,7 @@ const onEditRestaurantOpen = (payload: Restaurant): void => {
 
         <!-- Display Results -->
         <div class="columns is-multiline">
-          <div v-for="item in filteredRestaurantList" class="column is-full" :key="`item-${item}`">
+          <div v-for="item in restaurantStore.getFilteredRestaurantList()" class="column is-full" :key="`item-${item}`">
             <RestaurantCard
               :restaurant="item"
               @edit-restaurant="onEditRestaurantOpen"

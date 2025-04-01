@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 
 type StoreShape = {
   list: Restaurant[]
+  filterText: string
 }
 
 export const useRestaurantStore = defineStore('RestaurantStore', {
@@ -31,6 +32,7 @@ export const useRestaurantStore = defineStore('RestaurantStore', {
         status: 'Do Not Recommend',
       },
     ],
+    filterText: '',
   }),
   getters: {
     getRestaurantById:
@@ -41,6 +43,15 @@ export const useRestaurantStore = defineStore('RestaurantStore', {
       (state: any) =>
       (payload: Restaurant): number =>
         state.list.findIndex((r: Restaurant) => r.id === payload.id),
+    getFilteredRestaurantList: (state: any) => (): Restaurant[] => {
+      return state.list.filter((restaurant: Restaurant): boolean => {
+        if (restaurant.name) {
+          return restaurant.name.toLowerCase().includes(state.filterText.toLowerCase())
+        }
+        return false
+      })
+    },
+    getFiltredRestaurantListLength: (state: any) => (): number => state.getFilteredRestaurantList().length,
   },
   actions: {
     addRestaurant(payload: Restaurant): void {
